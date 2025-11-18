@@ -1,12 +1,12 @@
 import { createResource, Show, Suspense, type Component } from "solid-js";
-import SystemData from "./components/SystemData";
+import SystemInfo from "./components/SystemInfo";
 import axiosInstance from "./axios/axiosInstance";
 import { SystemDataInfo } from "./types";
 
 const App: Component = () => {
   return (
     <>
-      <SystemData />
+      <SystemInfo />
     </>
   );
 };
