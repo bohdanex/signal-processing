@@ -1,11 +1,12 @@
-import type { Component } from 'solid-js';
-import Comp from './Comp';
+import { createResource, Show, Suspense, type Component } from "solid-js";
+import SystemData from "./components/SystemData";
+import axiosInstance from "./axios/axiosInstance";
+import { SystemDataInfo } from "./types";
 
 const App: Component = () => {
   return (
     <>
-      <h1>Hello world!!!!</h1>
-      <Comp />
+      <SystemData />
     </>
   );
 };

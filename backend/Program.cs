@@ -1,8 +1,25 @@
+using backend.Services.Abstraction;
+using backend.Services.Implementation;
+using System.Text.Json;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+builder.Services
+    .InjectAppDependencies()
+    .AddOpenApi();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAllOrigins",
+        builder =>
+        {
+            builder.AllowAnyOrigin()
+                   .AllowAnyMethod()
+                   .AllowAnyHeader();
+        });
+});
 
 var app = builder.Build();
 
@@ -11,7 +28,12 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
-
+app.UseCors((c) =>
+{
+    c.AllowAnyOrigin();
+    c.AllowAnyHeader();
+    c.AllowAnyMethod();
+});
 app.UseHttpsRedirection();
 
 var summaries = new[]
@@ -32,6 +54,47 @@ app.MapGet("/weatherforecast", () =>
     return forecast;
 })
 .WithName("GetWeatherForecast");
+
+app.MapGet("os/info", (ISystemInfoService sysInfoService) =>
+{
+    return new 
+    {
+        os = sysInfoService.GetOsInfo(),
+        rams = sysInfoService.GetRamInfo(),
+        cpu = sysInfoService.GetCpuInfo(),
+        gpus = sysInfoService.GetGpuInfo(),
+    };
+});
+
+app.MapGet("os/parallel-compute-support", async (IParallelComputeSupportService service) =>
+{
+    return await service.GetAllSupportInfoAsync();
+});
+
+
+app.MapGet("/sse/workload", async (HttpContext context, IOSWorkloadService workloadService) =>
+{
+    context.Response.Headers.ContentType = "text/event-stream";
+    context.Response.Headers.CacheControl = "no-cache";
+    context.Response.Headers.Connection = "keep-alive";
+
+    try
+    {
+        while (!context.RequestAborted.IsCancellationRequested)
+        {
+            var workload = workloadService.GetWorkload();
+            var json = JsonSerializer.Serialize(workload);
+
+            await context.Response.WriteAsync($"data: {json}\n\n");
+            await context.Response.Body.FlushAsync();
+
+            await Task.Delay(500, context.RequestAborted);
+        }
+    } catch (TaskCanceledException)
+    {
+
+    }
+});
 
 app.Run();
 
