@@ -1,7 +1,5 @@
-import { createResource, Show, Suspense, type Component } from "solid-js";
-import SystemInfo from "./components/SystemInfo";
-import axiosInstance from "./axios/axiosInstance";
-import { SystemDataInfo } from "./types";
+import { type Component } from "solid-js";
+import SystemInfo from "./pages/SystemInfoPage";
 
 const App: Component = () => {
   return (

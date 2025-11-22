@@ -19,16 +19,14 @@
     public class GpuWorkloadInfo
     {
         public string Name { get; set; }
-        public float UsagePercent { get; set; }
         public float MemoryUsedMb { get; set; }
         public float MemoryTotalMb { get; set; }
-        public float TemperatureCelsius { get; set; }
     }
 
     public class OsWorkloadInfo
     {
         public CpuWorkloadInfo CPU { get; set; }
         public RamWorkloadInfo RAM { get; set; }
-        public GpuWorkloadInfo GPU { get; set; }
+        public GpuWorkloadInfo[] GPUs { get; set; }
     }
 }

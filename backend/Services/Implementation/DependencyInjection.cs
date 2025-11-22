@@ -1,4 +1,5 @@
 ﻿using backend.Services.Abstraction;
+using backend.Utils;
 using Hardware.Info;
 using System.Runtime.CompilerServices;
 
@@ -9,6 +10,8 @@ namespace backend.Services.Implementation
         public static IServiceCollection InjectAppDependencies(this IServiceCollection services)
         {
             services.AddHardwareInfo();
+            services.AddTransient<Benchmark>();
+            services.AddSingleton<GPUMemoryMonitor>();
             services.AddSingleton<ISystemInfoService, SystemInfoService>();
             services.AddSingleton<IOSWorkloadService, WindowsWorkloadService>();
             services.AddSingleton<IParallelComputeSupportService, WindowsComputeSupportService>();

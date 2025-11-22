@@ -64,11 +64,11 @@ const createRamData = (ramInfo?: RamInfo) => {
   ];
 };
 
-export default () => {
+export default function SystemInfoPage() {
   const [info] = createResource(fetchOsInfo);
 
   return (
-    <div class="flex flex-col gap-y-3 mx-4">
+    <div class="flex flex-col gap-y-3 mx-4 mt-2 grow">
       <h1 class="font-bold text-2xl">Системні характеристики</h1>
       <Show
         when={info()}
@@ -128,7 +128,7 @@ export default () => {
       </Show>
     </div>
   );
-};
+}
 
 interface BlockData {
   iconPath: string;

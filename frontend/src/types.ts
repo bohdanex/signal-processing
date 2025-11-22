@@ -32,3 +32,37 @@ export interface SystemDataInfo {
   cpu: CPUInfo;
   gpus: GPUInfo[];
 }
+
+export interface ComputeSupport {
+  name: string,
+  technologyId: number,
+  isSupported: boolean,
+  version: string,
+  details: string
+}
+
+interface CPUWorkload {
+  "UsagePercent": number,
+  "ProcessCount": number,
+  "ThreadCount": number,
+  "CurrentClockSpeed": number
+}
+
+interface RAMWorkload {
+  "TotalGb": number,
+  "UsedGb": number,
+  "FreeGb": number,
+  "UsagePercent": number
+}
+
+export interface GPUWorkload {
+  "Name": string,
+  "MemoryUsedMb": number,
+  "MemoryTotalMb": number
+}
+
+export interface Workload {
+  CPU: CPUWorkload;
+  RAM: RAMWorkload;
+  GPUs: GPUWorkload[];
+}
