@@ -2,6 +2,7 @@
 using NWaves.Signals;
 using NWaves.Transforms;
 using NWaves.Windows;
+using Silk.NET.OpenCL;
 
 namespace backend.Services._1D
 {
@@ -25,7 +26,7 @@ namespace backend.Services._1D
                 result[signalData.Index] = spectrogram;
             });
 
-
+            
             return result.Aggregate((left, right) => left.Concat(right)).ToList();
         }
     }

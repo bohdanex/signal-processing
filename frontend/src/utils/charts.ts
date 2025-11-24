@@ -1,4 +1,4 @@
-export function createChartOptions(minY?: number, maxY?: number, showTicksX = false, maxTicksX = 8) {
+export function createChartOptions(minY?: number, maxY?: number, showTicksX = false, maxTicksX = 8, tickCallback?: (value: number, index: number, values: number[]) => void) {
   return {
     responsive: true,
     maintainAspectRatio: false,
@@ -27,6 +27,7 @@ export function createChartOptions(minY?: number, maxY?: number, showTicksX = fa
           color: "rgba(156, 163, 175, 0.1)", // subtle grid
         },
         ticks: {
+          callback: tickCallback,
           color: "#9ca3af",
           maxTicksLimit: maxTicksX, // Prevent x-axis crowding
           display: showTicksX

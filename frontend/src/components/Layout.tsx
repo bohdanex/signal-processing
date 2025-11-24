@@ -8,7 +8,7 @@ export default function Layout(props: ParentProps) {
   createSignal(false);
 
   return (
-    <div class="flex flex-row gap-x-2">
+    <div class="flex flex-row gap-x-6">
       <div
         on:click={() => setShowSidebar(true)}
         class="p-2 absolute top-2 right-2 opacity-25 bg-white rounded-md hover:bg-blue-200 hover:opacity-100 duration-150 cursor-pointer"

@@ -49,8 +49,6 @@ const applyBandPassFilter = async (
 };
 
 export default function FilterSection(props: { audioFile: File }) {
-  const { audioFile } = props;
-
   const [getFilterType, setFilterType] = createSignal<FilterType>("low-pass");
   const [getFilteredResult, setFilterResult] = createSignal<
     ResultWithBenchmark<string>["benchmarkResult"] | null
@@ -63,7 +61,8 @@ export default function FilterSection(props: { audioFile: File }) {
 
   const onRunFilterClick = async (parallel: boolean) => {
     const filterType = getFilterType();
-    const selectedFile = audioFile;
+    const selectedFile = props.audioFile;
+
     if (!selectedFile) return;
 
     let result: ResultWithBenchmark<string> | null = null;

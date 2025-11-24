@@ -11,6 +11,7 @@
     <PackageReference Include="Carter" Version="10.0.0" />
     <PackageReference Include="Hardware.Info" Version="101.1.0.1" />
     <PackageReference Include="ILGPU" Version="1.5.3" />
+    <PackageReference Include="ILGPU.Algorithms" Version="1.5.3" />
     <PackageReference Include="ManagedCuda-100" Version="10.0.31" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
     <PackageReference Include="NWaves" Version="0.9.6" />
@@ -19,6 +20,7 @@
     <PackageReference Include="Silk.NET" Version="2.22.0" />
     <PackageReference Include="Silk.NET.OpenCL" Version="2.22.0" />
     <PackageReference Include="Silk.NET.Vulkan" Version="2.22.0" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
     <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="10.0.0" />
     <PackageReference Include="System.Management" Version="10.0.0" />
   </ItemGroup>

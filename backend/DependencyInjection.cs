@@ -1,4 +1,5 @@
 ﻿using backend.Services._1D;
+using backend.Services._2D;
 using backend.Services.Abstraction;
 using backend.Services.Implementation;
 using backend.Utils;
@@ -18,6 +19,7 @@ namespace backend
             services.AddSingleton<IOSWorkloadService, WindowsWorkloadService>();
             services.AddSingleton<IParallelComputeSupportService, WindowsComputeSupportService>();
             services.AddSingleton<STFTService>();
+            services.AddSingleton<CUDA_Service>();
 
             return services;
         }

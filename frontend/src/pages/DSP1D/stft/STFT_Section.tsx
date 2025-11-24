@@ -37,7 +37,6 @@ async function stftTransform(
 }
 
 export default function STFT_Section(props: { audioFile: File }) {
-  const { audioFile } = props;
   const [getResult, setResult] =
     createSignal<ResultWithBenchmark<ResponseData>>();
   const [getStftSettings, setStftSettings] = createSignal<STFT_Settings>({
@@ -46,7 +45,11 @@ export default function STFT_Section(props: { audioFile: File }) {
   });
 
   const transformSignal = async (parallel: boolean) => {
-    const result = await stftTransform(getStftSettings(), audioFile, parallel);
+    const result = await stftTransform(
+      getStftSettings(),
+      props.audioFile,
+      parallel
+    );
     setSpectrum(result.data.channels[0][0]);
     setResult(result);
   };
@@ -66,8 +69,10 @@ export default function STFT_Section(props: { audioFile: File }) {
 
   return (
     <>
-      <h3>Налаштування короткочасного перетворення Фур'є</h3>
       <div class="flex flex-col gap-y-2 bg-blue-50 p-4 shadow-2xs rounded-lg">
+        <h3 class="font-bold">
+          Налаштування короткочасного перетворення Фур'є
+        </h3>
         <div class="flex gap-x-2 justify-between">
           <label for="window-size">Розмір вікна</label>
           <input
@@ -87,7 +92,7 @@ export default function STFT_Section(props: { audioFile: File }) {
           />
         </div>
         <div class="flex gap-x-2 justify-between">
-          <label for="hop-size">Розмір стрибка</label>
+          <label for="hop-size">Зсув вікна</label>
           <input
             id="hop-size"
             type="number"
@@ -120,19 +125,32 @@ export default function STFT_Section(props: { audioFile: File }) {
         </button>
       </div>
       <Show when={getResult()}>
-        <BenchmarkResults results={getResult()!.benchmarkResult} />
-        <div class="h-[400px] w-[400px] bg-gray-900 text-white">
-          <Line
-            data={stftChartData(getSpectrum()!)}
-            options={createChartOptions(
-              0,
-              Math.max(...getResult()!.data.channels[0].flat()),
-              true,
-              4
-            )}
-            width={500}
-            height={400}
-          />
+        <div class="bg-blue-50 p-4 shadow-2xs rounded-lg flex flex-col gap-y-2">
+          <BenchmarkResults results={getResult()!.benchmarkResult} />
+          <div>
+            <p class="mb-1 text-lg font-bold text-center">Спектрограма</p>
+            <div class="h-[400px] w-full bg-gray-900 text-white p-2 rounded-lg">
+              <Line
+                data={stftChartData(getSpectrum()!)}
+                options={createChartOptions(
+                  0,
+                  Math.max(...getResult()!.data.channels[0].flat()),
+                  true,
+                  10,
+                  (_value, index, values) => {
+                    if (index === 0 || index === values.length - 1) {
+                      return (
+                        Math.round((index / (values.length - 1)) * 22050) +
+                        " Гц"
+                      );
+                    }
+                  }
+                )}
+                width={500}
+                height={400}
+              />
+            </div>
+          </div>
         </div>
       </Show>
     </>
