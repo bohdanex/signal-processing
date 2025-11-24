@@ -1,48 +1,7 @@
 import { Workload } from "../../types";
+import { createChartOptions } from "../../utils/charts";
 
-export const ramChartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  animation: {
-    duration: 0, // Disable animation for real-time performance
-  },
-  interaction: {
-    mode: "index" as const,
-    intersect: false,
-  },
-  plugins: {
-    legend: {
-      display: true,
-      position: "top" as const,
-      labels: {
-        color: "#9ca3af", // gray-400
-      },
-    },
-    tooltip: {
-      enabled: true,
-    },
-  },
-  scales: {
-    x: {
-      grid: {
-        color: "rgba(156, 163, 175, 0.1)", // subtle grid
-      },
-      ticks: {
-        color: "#9ca3af",
-        maxTicksLimit: 8, // Prevent x-axis crowding
-      },
-    },
-    y: {
-      min: 0,
-      grid: {
-        color: "rgba(156, 163, 175, 0.1)",
-      },
-      ticks: {
-        color: "#9ca3af",
-      },
-    },
-  },
-};
+export const ramChartOptions = createChartOptions(0)
 
 export function getRAM_chartData(workloadData: Array<Workload & { time: number }>) {
   return {

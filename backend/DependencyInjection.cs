@@ -1,9 +1,11 @@
-﻿using backend.Services.Abstraction;
+﻿using backend.Services._1D;
+using backend.Services.Abstraction;
+using backend.Services.Implementation;
 using backend.Utils;
 using Hardware.Info;
 using System.Runtime.CompilerServices;
 
-namespace backend.Services.Implementation
+namespace backend
 {
     public static class DependencyInjection
     {
@@ -15,6 +17,7 @@ namespace backend.Services.Implementation
             services.AddSingleton<ISystemInfoService, SystemInfoService>();
             services.AddSingleton<IOSWorkloadService, WindowsWorkloadService>();
             services.AddSingleton<IParallelComputeSupportService, WindowsComputeSupportService>();
+            services.AddSingleton<STFTService>();
 
             return services;
         }

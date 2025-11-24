@@ -5,15 +5,13 @@ import SystemMonitor from "./systemMonitor";
 
 export default function Layout(props: ParentProps) {
   const [getShowSidebar, setShowSidebar] = createSignal(false);
-  const [getMouseIsOverSysMonitor, setMouseIsOverSysMonitor] =
-    createSignal(false);
+  createSignal(false);
 
   return (
     <div class="flex flex-row gap-x-2">
       <div
-        class="p-2 absolute top-2 right-2 opacity-25 bg-white rounded-md hover:bg-blue-200 hover:opacity-100 duration-150"
-        on:mouseover={() => setShowSidebar(true)}
-        on:mouseleave={() => setShowSidebar(false)}
+        on:click={() => setShowSidebar(true)}
+        class="p-2 absolute top-2 right-2 opacity-25 bg-white rounded-md hover:bg-blue-200 hover:opacity-100 duration-150 cursor-pointer"
       >
         <TbDeviceDesktopAnalytics size={32} />
       </div>
@@ -25,13 +23,11 @@ export default function Layout(props: ParentProps) {
       </ul>
       {props.children}
       <div
-        on:mouseover={() => setMouseIsOverSysMonitor(true)}
-        on:mouseleave={() => setMouseIsOverSysMonitor(false)}
-        class="absolute right-0 duration-200"
+        on:mouseover={() => setShowSidebar(true)}
+        on:mouseleave={() => setShowSidebar(false)}
+        class="absolute right-0 duration-200 max-h-full overflow-y-scroll"
         style={{
-          transform: `translate(${
-            getShowSidebar() || getMouseIsOverSysMonitor() ? 0 : "100%"
-          }, 0)`,
+          transform: `translate(${getShowSidebar() ? 0 : "100%"}, 0)`,
         }}
       >
         <SystemMonitor />

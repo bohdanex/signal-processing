@@ -1,7 +1,6 @@
 ﻿using NWaves.Filters.Base;
 using NWaves.Filters.Bessel;
 using NWaves.Signals;
-using System.Collections.Concurrent;
 
 namespace backend.Services._1D
 {
@@ -28,15 +27,15 @@ namespace backend.Services._1D
         public async Task<List<DiscreteSignal>> ApplyFilterParallel(Func<IFilter> filterFactory)
         {
             DiscreteSignal[][] filteredSignals = new DiscreteSignal[Signals.Count][];
-            var divisions = Environment.ProcessorCount / Signals.Count;
+            var segmentsPerChannel = (Environment.ProcessorCount / Signals.Count);
             var segmentedSignals = new List<SignalSegment>();
 
             for (int i = 0; i < Signals.Count; i++)
             {
                 var signal = Signals[i];
-                var segmentLength = signal.Length / divisions;
-                filteredSignals[i] = new DiscreteSignal[divisions];
-                for (int j = 0; j < divisions; j++)
+                var segmentLength = signal.Length / segmentsPerChannel;
+                filteredSignals[i] = new DiscreteSignal[segmentsPerChannel];
+                for (int j = 0; j < segmentsPerChannel; j++)
                 {
                     segmentedSignals.Add(new SignalSegment(j, i, signal[j * segmentLength, (j + 1) * segmentLength]));
                 }
