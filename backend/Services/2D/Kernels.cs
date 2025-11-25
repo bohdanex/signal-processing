@@ -1,21 +1,22 @@
 ﻿using ILGPU;
 using ILGPU.Algorithms;
 using ILGPU.Runtime;
+using ILGPU.Util;
 using System.Numerics;
 
 namespace backend.Services._2D
 {
     public static class Kernels
     {
-        public static void NormalizeKernel(Index1D i, ArrayView<Complex> data, ArrayView<Complex> output)
+        public static void NormalizeKernel(Index1D i, ArrayView<Float2> data, ArrayView<Float2> output)
         {
             output[i] = data[i] / data.Length;
         }
 
         public static void GaussianBlurKernel(
             Index2D i,
-            ArrayView2D<Complex, Stride2D.DenseY> data,
-            ArrayView2D<Complex, Stride2D.DenseY> output,
+            ArrayView2D<Float2, Stride2D.DenseY> data,
+            ArrayView2D<Float2, Stride2D.DenseY> output,
             float sigma)
         {
             long nx = data.Extent.X;   // number of rows
@@ -39,8 +40,8 @@ namespace backend.Services._2D
 
         public static void LaplacianKernel(
             Index2D idx,
-            ArrayView2D<Complex, Stride2D.DenseY> input,
-            ArrayView2D<Complex, Stride2D.DenseY> output,
+            ArrayView2D<Float2, Stride2D.DenseY> input,
+            ArrayView2D<Float2, Stride2D.DenseY> output,
             float scale) // optional intensity
         {
             long nx = input.Extent.X;

@@ -1,109 +1,98 @@
-﻿using ILGPU;
+﻿using backend.Services.Implementation;
+using ILGPU;
 using ILGPU.Runtime;
 using ILGPU.Runtime.Cuda;
 using ILGPU.Runtime.Cuda.API;
-using System.Numerics;
+using ILGPU.Util;
 
 namespace backend.Services._2D
 {
     public class CUDA_Service
     {
-        public float[,] ApplyKernel<TKernelParam>(float[,] data2D, int nx, int ny, Action<Index2D, ArrayView2D<Complex, Stride2D.DenseY>, ArrayView2D<Complex, Stride2D.DenseY>, TKernelParam> kernel, TKernelParam kernelParam, int deviceIndex = 0) where TKernelParam : struct
+        private Context _context;
+        private CudaDevice _device;
+        private Accelerator _accelerator;
+        private CuFFTAPI _api;
+        private Action<Index2D, ArrayView2D<Float2, Stride2D.DenseY>, ArrayView2D<Float2, Stride2D.DenseY>, float> _gaussianBlurKernel;
+        private Action<Index2D, ArrayView2D<Float2, Stride2D.DenseY>, ArrayView2D<Float2, Stride2D.DenseY>, float> _laplacianKernel;
+        private Action<Index1D, ArrayView<Float2>, ArrayView<Float2>> _normalizeKernel;
+
+        public CUDA_Service()
         {
-            // 1. Set up ILGPU
-            using var context = Context.Create((builder) => builder.EnableAlgorithms().AllAccelerators());
-            var device = context.GetCudaDevice(deviceIndex);
-            using var accelerator = device.CreateCudaAccelerator(context);
+            _context = Context.Create((builder) => builder.EnableAlgorithms().AllAccelerators());
+            _device = _context.GetCudaDevice(0);
+            _accelerator = _device.CreateCudaAccelerator(_context);
+            _api = new CuFFT(CuFFTAPIVersion.V11).API;
+            _gaussianBlurKernel = _accelerator.LoadAutoGroupedStreamKernel<Index2D, ArrayView2D<Float2, Stride2D.DenseY>, ArrayView2D<Float2, Stride2D.DenseY>, float>(Kernels.GaussianBlurKernel);
+            _laplacianKernel = _accelerator.LoadAutoGroupedStreamKernel<Index2D, ArrayView2D<Float2, Stride2D.DenseY>, ArrayView2D<Float2, Stride2D.DenseY>, float>(Kernels.LaplacianKernel);
+            _normalizeKernel = _accelerator.LoadAutoGroupedStreamKernel<Index1D, ArrayView<Float2>, ArrayView<Float2>>(Kernels.NormalizeKernel);
+        }
 
-            // 2. Create cuFFT wrapper
-            var cufft = new CuFFT(CuFFTAPIVersion.V11);
+        public Float2[,] ApplyKernel<TKernelParam>(Float2[,] data2D, int nx, int ny, Action<Index2D, ArrayView2D<Float2, Stride2D.DenseY>, ArrayView2D<Float2, Stride2D.DenseY>, TKernelParam> kernelExecutor, TKernelParam kernelParam, int deviceIndex = 0) where TKernelParam : struct
+        {
+            // 1. Allocate GPU buffers
+            using var inputBuffer = _accelerator.Allocate2DDenseY(data2D);
+            using var freqBuffer = _accelerator.Allocate2DDenseY<Float2>(new Index2D(nx, ny));
+            using var kernelResultBuffer = _accelerator.Allocate2DDenseY<Float2>(new Index2D(nx, ny));
+            using var outputBuffer = _accelerator.Allocate2DDenseY<Float2>(new Index2D(nx, ny));
 
-            // 3. Convert input values to double-precision Complex
-            var inputComplex = new Complex[nx, ny];
-            for (int i = 0; i < nx; i++)
-            {
-                for (int j = 0; j < ny; j++)
-                {
-                    inputComplex[i, j] = new Complex(data2D[i, j], 0);
-                }
-            }
-
-            // 4. Allocate GPU buffers
-            using var inputBuffer = accelerator.Allocate2DDenseY(inputComplex);
-            using var freqBuffer = accelerator.Allocate2DDenseY<Complex>(new Index2D(nx, ny));
-
-            // 5. Create FFT plan (double-precision complex)
-            CuFFTException.ThrowIfFailed(
-                cufft.API.Plan2D(out nint plan, nx, ny, CuFFTType.CUFFT_Z2Z)
-            );
+            // 2. Create FFT plan
+            _api.Plan2D(out nint plan, nx, ny, CuFFTType.CUFFT_C2C);
 
             // --------------------------
             // FORWARD FFT: input → freqBuffer
             // --------------------------
-            CuFFTException.ThrowIfFailed(
-                cufft.API.ExecZ2Z(
-                    plan,
-                    inputBuffer.View.BaseView,
-                    freqBuffer.View.BaseView,
-                    CuFFTDirection.FORWARD
-                )
+            _api.ExecC2C(
+                plan,
+                inputBuffer.View.BaseView,
+                freqBuffer.View.BaseView,
+                CuFFTDirection.FORWARD
             );
 
-            accelerator.Synchronize();
+            _accelerator.Synchronize();
 
             // apply a kernel
-            var kernelResultBuffer = accelerator.Allocate2DDenseY<Complex>(new Index2D(nx, ny));
-            var kernelExecutor = accelerator.LoadAutoGroupedStreamKernel(kernel);
+            
             kernelExecutor(new Index2D(nx, ny), freqBuffer.View, kernelResultBuffer.View, kernelParam);
-            accelerator.Synchronize();
+            _accelerator.Synchronize();
 
-
-            using var outputBuffer = accelerator.Allocate2DDenseY<Complex>(new Index2D(nx, ny));
 
             // --------------------------a
             // INVERSE FFT: freqBuffer → outputBuffer
             // --------------------------
-            CuFFTException.ThrowIfFailed(
-                cufft.API.ExecZ2Z(
-                    plan,
-                    kernelResultBuffer.View.BaseView,
-                    outputBuffer.View.BaseView,
-                    CuFFTDirection.INVERSE
-                )
+            _api.ExecC2C(
+                plan,
+                kernelResultBuffer.View.BaseView,
+                outputBuffer.View.BaseView,
+                CuFFTDirection.INVERSE
             );
 
             // wait until fft is done
-            accelerator.Synchronize();
+            _accelerator.Synchronize();
 
             //// uFFT does NOT normalize, so load a kernel
-            var normalizationKernel = accelerator.LoadAutoGroupedStreamKernel<Index1D, ArrayView<Complex>, ArrayView<Complex>>(Kernels.NormalizeKernel);
-            using var outputNormBuffer = accelerator.Allocate2DDenseY<Complex>(new Index2D(nx, ny));
-            normalizationKernel((int)outputBuffer.Length, outputBuffer.View.BaseView, outputNormBuffer.View.BaseView);
+            using var outputNormBuffer = _accelerator.Allocate2DDenseY<Float2>(new Index2D(nx, ny));
+            _normalizeKernel((int)outputBuffer.Length, outputBuffer.View.BaseView, outputNormBuffer.View.BaseView);
 
-            accelerator.Synchronize();
+            _accelerator.Synchronize();
+                
+            var result = outputNormBuffer.GetAsArray2D();
 
-            var resultFromBuffer = outputNormBuffer.GetAsArray2D();
-
-            var result = new float[nx, ny];
-            for (int i = 0; i < nx; i++)
-            {
-                for (int j = 0; j < ny; j++)
-                {
-                    result[i, j] = (float)resultFromBuffer[i, j].Real;
-                }
-            }
+            _api.Destroy(plan);
 
             return result;
         }
 
-        public float[,] ApplyGaussianBlur(float[,] data2D, int nx, int ny, float sigma, int deviceIndex = 0)
+        public Float2[,] ApplyGaussianBlur(Float2[,] data2D, int nx, int ny, float sigma, int deviceIndex = 0)
         {
-            return ApplyKernel(data2D, nx, ny, Kernels.GaussianBlurKernel, sigma, deviceIndex);
+            _accelerator.ClearCache(ClearCacheMode.Everything);
+            return ApplyKernel(data2D, nx, ny, _gaussianBlurKernel, sigma, deviceIndex);
         }
 
-        public float[,] ApplyLaplacianFilter(float[,] data2D, int nx, int ny, float sigma, int deviceIndex = 0)
+        public Float2[,] ApplyLaplacianFilter(Float2[,] data2D, int nx, int ny, float sigma, int deviceIndex = 0)
         {
-            return ApplyKernel(data2D, nx, ny, Kernels.LaplacianKernel, sigma, deviceIndex);
+            _accelerator.ClearCache(ClearCacheMode.Everything);
+            return ApplyKernel(data2D, nx, ny, _laplacianKernel, sigma, deviceIndex);
         }
     }
 }

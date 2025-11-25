@@ -1,4 +1,6 @@
 import { createSignal, For, JSX, Show } from "solid-js";
+import GaussianBlur from "./GaussianBlur";
+import LaplacianFilter from "./LaplacianFilter";
 
 const [selectedImageFile, setSelectedImageFile] = createSignal<File>();
 const [selectedImageURL, setSelectedImageURL] = createSignal<string | null>();
@@ -14,16 +16,12 @@ export default function DSP2D_Page() {
 
   const tabs: Tab[] = [
     {
-      name: "ШПФ",
-      element: <></>,
+      name: "Розмиття Гауса",
+      element: <GaussianBlur imageFile={selectedImageFile()!} />,
     },
     {
-      name: "Фільтри",
-      element: <></>,
-    },
-    {
-      name: "Морфологічні операції",
-      element: <></>,
+      name: "Фільтр лапласа",
+      element: <LaplacianFilter imageFile={selectedImageFile()!} />,
     },
   ];
 
@@ -83,6 +81,7 @@ export default function DSP2D_Page() {
             )}
           </For>
         </ul>
+        {tabs[getTabIndex()].element}
       </Show>
     </div>
   );
