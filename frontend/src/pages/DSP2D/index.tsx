@@ -1,6 +1,8 @@
 import { createSignal, For, JSX, Show } from "solid-js";
 import GaussianBlur from "./GaussianBlur";
 import LaplacianFilter from "./LaplacianFilter";
+import MorphOps from "./MorphOps";
+import { BsInfoCircleFill } from "solid-icons/bs";
 
 const [selectedImageFile, setSelectedImageFile] = createSignal<File>();
 const [selectedImageURL, setSelectedImageURL] = createSignal<string | null>();
@@ -23,17 +25,36 @@ export default function DSP2D_Page() {
       name: "Фільтр лапласа",
       element: <LaplacianFilter imageFile={selectedImageFile()!} />,
     },
+    {
+      name: "Морфологічні операції",
+      element: <MorphOps imageFile={selectedImageFile()!} />,
+    },
   ];
 
   return (
     <div class="mt-2 flex flex-col gap-y-2">
+      <h2 class="text-xl font-bold">Обробка зображень</h2>
       <div class="flex flex-col gap-y-2 p-3 border-gray-900 border-2 border-dashed h-min rounded-md">
         <label
           for="audio-file-picker"
-          class="bg-blue-50 border border-gray-400 hover:bg-blue-200 duration-150 rounded-md p-4 block text-xl cursor-pointer"
+          class="bg-blue-50 border border-gray-400 hover:bg-blue-200 duration-150 rounded-md p-4 block text-xl cursor-pointer w-max"
         >
           Виберіть файл
         </label>
+        <Show when={!selectedImageFile()}>
+          <div>
+            <BsInfoCircleFill
+              color="var(--color-gray-50)"
+              class="mr-2 inline-block"
+            />
+            Оберіть зображення з пристрою, щоб виконати оброку:
+            <ul class="mr-2">
+              <li>• розмиття</li>
+              <li>• фільтр</li>
+              <li>• морфологічні операції</li>
+            </ul>
+          </div>
+        </Show>
         <input
           ref={inputRef}
           id="audio-file-picker"

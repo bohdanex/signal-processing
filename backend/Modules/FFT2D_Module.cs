@@ -1,5 +1,6 @@
 ﻿using backend.Services._2D;
 using backend.Services.Implementation;
+using backend.Utils;
 using Carter;
 using ILGPU.Util;
 using Microsoft.AspNetCore.Mvc;
@@ -22,7 +23,7 @@ namespace backend.Modules
                 try
                 {
                     var (resultImage, benchmarks) = await MapImageBlurAsync(image, () => fft2d.ApplyGaussianBlur(normalizedPixels, image.Width, image.Height, sigma));
-                    var response = new ResponseWithBenchmark<string>(await ToBase64Image(resultImage), benchmarks);
+                    var response = new ResponseWithBenchmark<string>(await resultImage.ToBase64Image(), benchmarks);
                     resultImage.Dispose();
 
                     return Results.Ok(response);
@@ -43,7 +44,7 @@ namespace backend.Modules
                 {
                     var (resultImage, benchmarks) = await MapImageBlurAsync(image, () => fft2d.ApplyLaplacianFilter(normalizedPixels, image.Width, image.Height, scale));
 
-                    var response = new ResponseWithBenchmark<string>(await ToBase64Image(resultImage), benchmarks);
+                    var response = new ResponseWithBenchmark<string>(await resultImage.ToBase64Image(), benchmarks);
                     resultImage.Dispose();
 
                     return Results.Ok(response);
@@ -53,14 +54,6 @@ namespace backend.Modules
                     return Results.BadRequest("Make sure CUDA toolkit is installed on your machine");
                 }
             }).DisableAntiforgery();
-        }
-
-        private static async Task<string> ToBase64Image(Image<L8> image)
-        {
-            using var memoryStream = new MemoryStream();
-            await image.SaveAsPngAsync(memoryStream);
-            var base64 = Convert.ToBase64String(memoryStream.ToArray());
-            return $"data:image/png;base64,{base64}";
         }
 
         private static async Task<(Image<L8>, BenchmarkResult)> MapImageBlurAsync(Image image, Func<Float2[,]> processor)

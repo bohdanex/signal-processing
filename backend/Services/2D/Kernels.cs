@@ -60,5 +60,75 @@ namespace backend.Services._2D
 
             output[u, v] = input[u, v] * factor;
         }
+
+        public static void DilationKernel(
+            Index2D index,
+            ArrayView2D<float, Stride2D.DenseY> input,
+            ArrayView2D<float, Stride2D.DenseY> output,
+            int radius)
+        {
+            int x = index.X;
+            int y = index.Y;
+
+            // image dimensions
+            long width = input.Extent.X;
+            long height = input.Extent.Y;
+
+            float maxVal = float.MinValue;
+
+            // iterate the neighborhood
+            for (int dy = -radius; dy <= radius; dy++)
+            {
+                int ny = y + dy;
+                if (ny < 0 || ny >= height)
+                    continue;
+
+                for (int dx = -radius; dx <= radius; dx++)
+                {
+                    int nx = x + dx;
+                    if (nx < 0 || nx >= width)
+                        continue;
+
+                    float v = input[new Index2D(nx, ny)];
+                    if (v > maxVal)
+                        maxVal = v;
+                }
+            }
+
+            output[index] = maxVal;
+        }
+
+        public static void ErosionKernel(
+            Index2D index,
+            ArrayView2D<float, Stride2D.DenseY> input,
+            ArrayView2D<float, Stride2D.DenseY> output,
+        int radius)
+            {
+                int x = index.X;
+                int y = index.Y;
+
+                long width = input.Extent.X;
+                long height = input.Extent.Y;
+
+                float min = float.PositiveInfinity;
+
+                for (int dx = -radius; dx <= radius; dx++)
+                {
+                    int ix = x + dx;
+                    if (ix < 0 || ix >= width) continue;
+
+                    for (int dy = -radius; dy <= radius; dy++)
+                    {
+                        int iy = y + dy;
+                        if (iy < 0 || iy >= height) continue;
+
+                        float val = input[ix, iy];
+                        if (val < min)
+                            min = val;
+                    }
+                }
+
+                output[x, y] = min;
+            }
     }
 }

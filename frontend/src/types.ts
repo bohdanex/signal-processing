@@ -1,3 +1,5 @@
+import { BenchmarkResult } from "./axios/types";
+
 export interface OSInfo {
   name: string;
   architecture: string;
@@ -65,4 +67,11 @@ export interface Workload {
   CPU: CPUWorkload;
   RAM: RAMWorkload;
   GPUs: GPUWorkload[];
+}
+
+export interface Experiment<T> {
+  name: string;
+  time: number;
+  inputData: T;
+  results: BenchmarkResult[];
 }

@@ -20,6 +20,7 @@ namespace backend
             services.AddSingleton<IParallelComputeSupportService, WindowsComputeSupportService>();
             services.AddSingleton<STFTService>();
             services.AddSingleton<CUDA_Service>();
+            services.AddSingleton<MorphOps>();
 
             return services;
         }

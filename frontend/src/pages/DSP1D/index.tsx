@@ -2,6 +2,7 @@ import { createSignal, For, JSX, onCleanup, Show } from "solid-js";
 import STFT_Section from "./stft/STFT_Section";
 import throttle from "lodash.throttle";
 import FilterSection from "./FilterSection";
+import { BsInfoCircleFill } from "solid-icons/bs";
 
 export const [getAudioTime, setAudioTime] = createSignal(0);
 
@@ -45,11 +46,12 @@ export default function DSP1D() {
 
   return (
     <div class="flex flex-col mt-2 gap-y-4">
+      <h2 class="text-xl font-bold">Обробка аудіо</h2>
       <div class="flex flex-col gap-y-2 p-3 border-gray-900 border-2 border-dashed h-min rounded-md">
         <div class="flex gap-x-4">
           <label
             for="audio-file-picker"
-            class="bg-blue-50 border border-gray-400 hover:bg-blue-200 duration-150 rounded-md p-4 block text-xl"
+            class="bg-blue-50 border border-gray-400 hover:bg-blue-200 duration-150 rounded-md p-4 block text-xl cursor-pointer"
           >
             Виберіть файл
           </label>
@@ -84,6 +86,23 @@ export default function DSP1D() {
             </div>
           </Show>
         </div>
+        <Show when={!getSelectedFile()}>
+          <div>
+            <BsInfoCircleFill
+              color="var(--color-gray-50)"
+              class="mr-2 inline-block"
+            />
+            Оберіть аудіо файл формату <strong>WAV</strong> з пристрою,
+            <br />
+            щоб виконати:
+            <ul class="mr-2">
+              <li>
+                • виконати фільтрацію (низьких, високих частот та діапазон)
+              </li>
+              <li>• побудувати спектрограму</li>
+            </ul>
+          </div>
+        </Show>
         <Show when={getSelectedFile()}>
           <audio
             controls
@@ -103,22 +122,29 @@ export default function DSP1D() {
           </audio>
         </Show>
       </div>
-      <ul class="flex flex-row h-10 rounded-md overflow-hidden w-min">
-        <For each={tabs}>
-          {(tab, index) => (
-            <li
-              class="p-2 cursor-pointer bg-gray-200 hover:bg-gray-100 duration-150 not-last:border-r border-black min-w-20 text-center"
-              classList={{
-                "bg-gray-50": getTabIndex() === index(),
-              }}
-              on:click={() => setTabIndex(index())}
-            >
-              {tab.name}
-            </li>
-          )}
-        </For>
-      </ul>
-      <Show when={getSelectedFile()}>{tabs[getTabIndex()].element}</Show>
+
+      <Show when={getSelectedFile()}>
+        {
+          <>
+            <ul class="flex flex-row h-10 rounded-md overflow-hidden w-min">
+              <For each={tabs}>
+                {(tab, index) => (
+                  <li
+                    class="p-2 cursor-pointer bg-gray-200 hover:bg-gray-100 duration-150 not-last:border-r border-black min-w-20 text-center"
+                    classList={{
+                      "bg-gray-50": getTabIndex() === index(),
+                    }}
+                    on:click={() => setTabIndex(index())}
+                  >
+                    {tab.name}
+                  </li>
+                )}
+              </For>
+            </ul>
+            {tabs[getTabIndex()].element}
+          </>
+        }
+      </Show>
     </div>
   );
 }
