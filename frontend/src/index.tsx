@@ -7,6 +7,7 @@ import Layout from "./components/Layout";
 import Can_I_UsePage from "./pages/Can_I_UsePage";
 import DSP1D from "./pages/DSP1D";
 import DSP2D_Page from "./pages/DSP2D";
+import AboutPage from "./pages/About";
 
 const root = document.getElementById("root");
 
@@ -24,6 +25,7 @@ render(
       <Route path={"/can-i-use"} component={Can_I_UsePage} />
       <Route path={"/1d"} component={DSP1D} />
       <Route path={"/2d"} component={DSP2D_Page} />
+      <Route path={"/about"} component={AboutPage} />
     </Router>
   ),
   root!

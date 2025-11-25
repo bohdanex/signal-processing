@@ -1,7 +1,7 @@
 import { Workload } from "../../types";
 import { createChartOptions } from "../../utils/charts";
 
-export const ramChartOptions = createChartOptions(0)
+export const ramChartOptions = createChartOptions(0, 100)
 
 export function getRAM_chartData(workloadData: Array<Workload & { time: number }>) {
   return {

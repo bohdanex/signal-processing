@@ -20,6 +20,7 @@ export default function Layout(props: ParentProps) {
         <TabItem name="Підтримка технологій" route="/can-i-use" />
         <TabItem name="Обробка аудіо" route="/1d" />
         <TabItem name="Обробка зображень" route="/2d" />
+        <TabItem name="Про додаток" route="/about" />
       </ul>
       {props.children}
       <div
